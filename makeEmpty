@@ -1,0 +1,14 @@
+struct Node* MakeEmpty(struct Node* L) {
+    if (L != NULL) {
+        free(L);  
+    }
+
+    L = (struct Node*)malloc(sizeof(struct Node));
+    if (L == NULL) {
+        printf("Out of memory!\n");
+        return NULL;
+    }
+
+    L->next = NULL;
+    return L;
+}
