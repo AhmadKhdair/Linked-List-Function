@@ -1,14 +1,12 @@
-struct Node* MakeEmpty(struct Node* L) {
-    if (L != NULL) {
-        free(L);  
-    }
+struct node* MakeEmpty(struct node* L){
+    if(L != NULL)
+        DeleteList( L );
 
-    L = (struct Node*)malloc(sizeof(struct Node));
-    if (L == NULL) {
-        printf("Out of memory!\n");
-        return NULL;
-    }
+    L = (struct node*)malloc(sizeof(struct node));
 
-    L->next = NULL;
+    if(L == NULL)
+        printf(“Out of memory!\n”);
+
+    L->Next = NULL;
     return L;
 }
