@@ -1,0 +1,9 @@
+struct node* Find(int X,struct node* L){
+  struct node* P;
+  P=L->Next;
+
+  while( P !=NULL && P->data != X)
+        P=P->next;
+
+  return P;
+}
