@@ -1,0 +1,3 @@
+int isEmpty(struct node* L){
+    return L->Next == NULL ; // L->Next is the same of (L*).Next , which L* Mean Give me the variable that you pointer at it , then .Next , which mean give me the pointer Next Of the variable that you pointer at it
+}
