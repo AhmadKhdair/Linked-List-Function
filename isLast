@@ -1,0 +1,3 @@
+int isLast(struct node* P, struct node* L) {
+    return (P != NULL && P->Next == NULL);
+}
