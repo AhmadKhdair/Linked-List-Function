@@ -1,1 +1,7 @@
-
+struct node* FindPrevious(int X, struct node* L){
+    struct node* P;
+    P = L;
+    while(P->Next != NULL && P->Next->Data != X)
+        P = P->Next;
+    return P;
+}
