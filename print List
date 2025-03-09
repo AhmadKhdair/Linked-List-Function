@@ -1,0 +1,11 @@
+  void PrintList(struct node* L){
+    struct node* P = L;
+        if( IsEmpty(L))
+              printf(“Empty list\n”);
+
+        else
+          do{
+              P=P->Next;
+              printf(“%d\t”, P->Data);
+          }while( !IsLast(P, L) );
+  }
