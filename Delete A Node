@@ -1,0 +1,9 @@
+void Delete(int X, struct node* L){
+  struct node* P, temp;
+  P = FindPrevious(X, L);
+  if( !IsLast(P, L) ){
+      temp = P->Next;
+      P->Next = temp->Next; //bypass delete cell
+      free(temp);
+  }
+}
