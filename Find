@@ -1,6 +1,6 @@
 struct node* Find(int X,struct node* L){
   struct node* P;
-  P=L->Next;
+  P=L->Next; // i think i should let it as P=L , cuz when it P=L->Next we will skip the first node ! which maybe x at the first node, ask the doctor 
 
   while( P !=NULL && P->data != X)
         P=P->next;
