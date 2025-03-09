@@ -1,0 +1,11 @@
+  void DeleteList(struct node* L){
+    struct node* P, temp;
+    P = L->Next;
+    L->Next = NULL;
+
+      while(P != NULL){
+          temp = P->Next;
+          free(P);
+          P=temp;
+      }
+  }
