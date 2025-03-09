@@ -1,0 +1,7 @@
+void Insert(int X, struct node* L, struct node* P){
+  struct node* temp;
+  temp = (struct node*)malloc(sizeof(struct node));
+  temp->Data = X;
+  temp->Next = P->Next;
+  P->Next = temp;
+}
