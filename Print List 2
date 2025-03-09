@@ -1,0 +1,11 @@
+void PrintList(struct node* L){
+  struct node* P=L->Next;
+    if(P==NULL){
+            printf("Empty List");
+    }
+    else
+         while(P!=NULL){
+            printf("%d ",P->data);
+            P=P->Next;
+         }
+}
