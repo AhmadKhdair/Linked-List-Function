@@ -1,7 +1,7 @@
 struct node* Find(int X,struct node* L){
   struct node* P;
   P=L->Next; 
-
+ // بيرجع بوينتر على القيمة يلي بدور عليها، لو مالقاها ف بكون null في كل الحالات
   while( P !=NULL && P->data != X)
         P=P->next;
 
