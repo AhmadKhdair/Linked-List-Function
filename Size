@@ -1,0 +1,9 @@
+int size( struct node* L){
+    struct node* p = L->Next;
+    int count = 0;
+        while(p != NULL ){
+          count += 1;
+          p = p->Next;
+        }
+    return count;
+}
