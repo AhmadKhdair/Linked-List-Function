@@ -1,0 +1,9 @@
+void  ConcatList(struct node * firstList, struct node * secondList){
+        struct node *p = firstList;
+        while (p->Next != NULL){
+            p = p->Next;            // to arrive to the last node
+        }
+        p->Next = secondList->Next;
+
+         // second = NULL; if i want to disable the second list after i concated it with first list
+    }
