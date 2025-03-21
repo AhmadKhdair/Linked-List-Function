@@ -1,0 +1,4 @@
+  void InsertFirst(int X,struct node* L){
+
+            Insert(X,L,L);
+    }
