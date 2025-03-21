@@ -1,0 +1,23 @@
+void InsertLast(int X,struct node* L){
+
+        struct node* temp=(struct node*) malloc(sizeof(struct node));
+
+        if(temp==NULL){
+            printf("out of memory, InsertLast Function");
+            return;
+        }
+
+        temp->data=X;
+        temp->Next=NULL;
+
+        if(L->Next==NULL) // if the list is empty
+            L->Next=temp;
+
+        else{
+            struct node* P=L->Next;
+            while(P->Next != NULL)
+                P=P->Next;
+            P->Next=temp;
+        }
+
+    }
