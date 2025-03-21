@@ -1,0 +1,24 @@
+struct node* CopyList(struct node* L) {
+        if (L == NULL) {
+            return NULL;
+        }
+
+        struct node* copyList =NULL;
+        copyList= MakeEmpty(copyList);;
+
+        struct node* currentOriginal = L->Next;
+        struct node* currentCopy = copyList;
+
+        while (currentOriginal != NULL) {
+            struct node* newNode = (struct node*)malloc(sizeof(struct node));
+            newNode->data = currentOriginal->data;
+            newNode->Next = NULL;
+
+            currentCopy->Next = newNode;
+            currentCopy = newNode;
+
+            currentOriginal = currentOriginal->Next;
+        }
+
+        return copyList;
+    }
