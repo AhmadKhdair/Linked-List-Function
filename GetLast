@@ -1,0 +1,9 @@
+struct node* GetLast(struct node* L) {
+        struct node* current = L->Next;
+
+        while (current != NULL && current->Next != NULL) {
+            current = current->Next;
+        }
+
+        return current;
+    }
