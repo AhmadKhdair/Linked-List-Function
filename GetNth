@@ -1,0 +1,14 @@
+    struct node* GetNth(int N, struct node* L) {
+        struct node* current = L->Next;
+        int count = 0;
+
+        while (current != NULL) {
+            if (count == N) {
+                return current;
+            }
+            count++;
+            current = current->Next;
+        }
+
+        return NULL;
+    }
