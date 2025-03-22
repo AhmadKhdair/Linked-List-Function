@@ -1,0 +1,9 @@
+    void DeleteLast(struct node* L){
+        struct node* p=L;
+        while(L!=NULL &&p->Next->Next!=NULL){
+            p=p->Next;
+        }
+        struct node* temp=p->Next;
+        p->Next=NULL;
+        free(temp);
+    }
