@@ -1,0 +1,13 @@
+    struct node* FindMiddle(struct node* L) {
+
+        int middleIndex=Size(L)/2;
+        int counter=0;
+        struct node* p=L->Next;
+        while(p!=NULL){
+            if(counter==middleIndex)
+                return p;
+                p=p->Next;
+                counter++;
+        }
+        return NULL; // if everything work good, we are not arrive to this case.
+    }
