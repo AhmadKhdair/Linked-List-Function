@@ -1,0 +1,14 @@
+void reverseList(struct node* L) {
+    struct node* current = L->Next;
+    struct node* next = NULL;
+    struct node* temp = NULL;
+
+    while (current != NULL) {
+        next = current->Next;
+        current->Next = temp;
+        temp = current;
+        current = next;  
+    }
+
+    L->Next = temp;  // to let the head pointer at the last node which it convert to the first one 
+}
