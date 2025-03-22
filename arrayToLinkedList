@@ -1,0 +1,9 @@
+ void arrayToLinkedList(int arr[],struct node* L){
+        struct node* p=L->Next;
+        int i=0;
+        while(p!=NULL){
+            p->data=arr[i]+123;
+            i++;
+            p=p->Next;
+        }
+    }
