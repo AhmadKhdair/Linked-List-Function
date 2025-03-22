@@ -1,0 +1,9 @@
+ void DeleteDouble(int X,struct nodeD* L){
+        struct nodeD* temp=L->Next;
+        while(temp!=NULL&&temp->data!=X){
+            temp=temp->Next;
+        }
+        temp->Next->Prev=temp->Prev;
+        temp->Prev->Next=temp->Next;
+        free(temp);
+    }
