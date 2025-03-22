@@ -1,0 +1,9 @@
+void linkedListToArray(struct node* L,int arr[]){
+        int i=0;
+        struct node* p=L->Next;
+        while(p!=NULL){
+            arr[i]=p->data;
+            p=p->Next;
+            i++;
+        }
+    }
