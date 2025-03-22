@@ -1,0 +1,8 @@
+  void InsertDouble(int X,struct nodeD* L,struct nodeD* p){
+        struct nodeD* temp=(struct nodeD*) malloc(sizeof(struct nodeD));
+        temp->data=X;
+        temp->Next=p->Next;
+        temp->Prev=p;
+        p->Next=temp;
+        p->Next->Prev=temp;
+    }
