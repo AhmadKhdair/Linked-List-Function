@@ -1,0 +1,9 @@
+    void DeleteFirst(struct node* L){
+        if(L!=NULL && L->Next!=NULL){
+            struct node* wantToDelete=L->Next;
+            L->Next=wantToDelete->Next;
+            free(wantToDelete);
+        }
+        else
+            printf("Empty List , Delete First Function  ");
+    }
