@@ -1,0 +1,451 @@
+#include <stdio.h>
+#include <malloc.h>
+struct nodeD{
+    int data;
+    struct nodeD* Next;
+    struct nodeD* Prev;
+};
+struct node{
+    int data;
+    struct node* Next;
+};
+
+// Function For Double Linked List :
+void insertDouble(int X,struct nodeD* L,struct nodeD* p);
+void deleteDouble(int X,struct nodeD* L);
+
+// Function For Single Linked List :
+
+struct node* makeEmpty(struct node* L);
+void insert(int X,struct node* L,struct node* P);
+void insertFirst(int X,struct node* L);
+void insertLast(int X,struct node* L);
+struct node* find(int X,struct node* L);
+struct node* findPrevious(int X,struct node* L);
+int isLast(struct node* P,struct node* L);
+void delete(int X,struct node* L);
+void deleteFirst(struct node* L);
+void deleteLast(struct node* L);
+void printList(struct node* L);
+int isEmpty(struct node* L);
+void deleteList(struct node* L);
+int size(struct node* L);
+struct node* copyList(struct node* L);
+struct node* getNth(int N, struct node* L); // to return The Nth Node ( return a pointer at it)
+struct node* getLast(struct node* L); // return the last node
+void concatList(struct node * firstList, struct node * secondList);
+struct node* findMiddle(struct node* L);
+void linkedListToArray(struct node* L,int arr[]);
+void arrayToLinkedList(int arr[],struct node* L);
+void merge(int arr[], int left, int mid, int right);
+void mergeSort(int arr[], int left, int right);
+void reverseList(struct node* L);
+int main() {
+
+
+
+
+
+
+    struct node* L = NULL;
+
+    L = makeEmpty(L);
+
+    // إضافة عناصر إلى القائمة
+    insert(10, L, L);
+    insertFirst(222,L);
+    insert(20, L, L);
+    insertLast(333,L);
+    insertLast(143,L);
+    int arr[size(L)];
+
+    linkedListToArray(L,arr);
+    for(int i=0;i< size(L);i++)
+        printf("%d ",arr[i]);
+    mergeSort(arr,0, size(L)-1);
+    printf("\n\n\n");
+    for(int i=0;i< size(L);i++)
+        printf("%d ",arr[i]);
+    printf("\n\n\n");
+
+    arrayToLinkedList(arr,L);
+    printList(L);
+        // طباعة القائمة 1
+    printf("List after insertion: ");
+    printList(L);/*
+    printf("\n");
+    DeleteLast(L);
+    printf(" list after delete last ");
+    PrintList(L);
+    printf("Middle date:%d",FindMiddle(L)->data);
+    struct node* List2= CopyList(L);
+    // طباعة القائمة 2
+
+    printf("The copied List :");
+    PrintList(List2);
+
+    // العثور على عنصر
+    struct node* foundNode = Find(13, L);
+    if (foundNode != NULL) {
+        printf("\nNode with data 20 found: %d\n", foundNode->data);
+    }
+
+    // حذف عنصر
+    Delete(10, L);
+    printf("\nList after deletion of 33: ");
+    PrintList(L);
+    DeleteLast(L);
+    printf(" list after delete last ");
+    PrintList(L);
+    printf("\nMiddle date:%d",FindMiddle(L)->data);
+
+    printf("\n");
+    PrintList(List2);
+
+    // حجم القائمة
+    int size = Size(L);
+    printf("\nSize of the list: %d\n", size);
+
+    // حذف كل العناصر
+    int size2=Size(List2);
+    printf("\nSize of the list2: %d\n", size2);
+
+    //DeleteList(L);
+    printf("List after deleting all elements: ");
+    PrintList(L);
+    printf("\n");
+    PrintList(List2);
+    printf("%d",Size(L));
+    printf("%d",Size(List2));
+    printf("\n\n");
+    ConcatList(L,List2);
+    PrintList(L   );
+*/
+    return 0;
+}
+
+
+    struct node* makeEmpty(struct node* L){
+        if(L!=NULL){
+            deleteList(L);
+        }
+        L=(struct node*)malloc(sizeof (struct node));
+        if(L==NULL){
+            printf("out of memory");
+            return NULL;
+        }
+
+        L->Next = NULL;
+        return L;
+    }
+
+
+    int isLast(struct node* P,struct node* L){
+        return (P!=NULL && P->Next==NULL);
+    }
+
+
+    int isEmpty(struct node* L){
+        return (L!=NULL && L->Next==NULL);
+    }
+
+
+    void insert(int X,struct node* L,struct node* P){
+        struct node* temp=(struct node*)malloc(sizeof(struct node));
+        temp->data=X;
+        temp->Next=P->Next;
+        P->Next=temp;
+    }
+
+    void insertFirst(int X,struct node* L){
+
+        insert(X,L,L);
+    }
+
+    void insertLast(int X,struct node* L){
+
+        struct node* temp=(struct node*) malloc(sizeof(struct node));
+
+        if(temp==NULL){
+            printf("out of memory, InsertLast Function");
+            return;
+        }
+
+        temp->data=X;
+        temp->Next=NULL;
+
+        if(L->Next==NULL) // if the list is empty
+            L->Next=temp;
+
+        else{
+            struct node* P=L->Next;
+            while(P->Next != NULL)
+                P=P->Next;
+            P->Next=temp;
+        }
+
+    }
+
+
+    struct node* find(int X,struct node* L){
+        struct node* P;
+        P=L->Next;
+        if(P==NULL){
+            printf("Error, P == NULL at Find Function");
+            return NULL;
+        }
+        while(P!=NULL && P->data!=X)
+            P= P->Next;
+        return P;
+    }
+
+
+    struct node* findPrevious(int X,struct node* L){
+        struct node* P=L;
+        if(P==NULL){
+            printf("Error, P == NULL at Find Previous Function, the return of the function is : NULL");
+            return NULL;
+        }
+        while(P->Next!=NULL && P->Next->data != X)
+            P=P->Next;
+        return P;
+    }
+
+
+    void delete(int X,struct node* L){
+        struct node* P= findPrevious(X,L);
+        struct node* tempForNodeWant2Free;
+        if(!isLast(P,L)){
+            tempForNodeWant2Free=P->Next;
+            P->Next=P->Next->Next;
+            free(tempForNodeWant2Free);
+        }
+    }
+
+    void deleteFirst(struct node* L){
+        if(L!=NULL && L->Next!=NULL){
+            struct node* wantToDelete=L->Next;
+            L->Next=wantToDelete->Next;
+            free(wantToDelete);
+        }
+        else
+            printf("Empty List , Delete First Function  ");
+    }
+    void deleteLast(struct node* L){
+        struct node* p=L;
+        while(L!=NULL &&p->Next->Next!=NULL){
+            p=p->Next;
+        }
+        struct node* temp=p->Next;
+        p->Next=NULL;
+        free(temp);
+    }
+    void deleteList(struct node* L){
+        struct node* temp;
+        struct node* P=L->Next;
+        L->Next= NULL;
+
+        while(P!=NULL){
+            temp=P->Next;
+            free(P);
+            P=temp;
+        }
+
+    }
+
+
+    void printList(struct node* L){
+        struct node* P=L->Next;
+        if(P==NULL){
+            printf("Empty List");
+        }
+        else
+            printf("L -> Head-> ");
+            while(P!=NULL){
+                printf(" [ %d | -]-->",P->data);
+                P=P->Next;
+            }
+            printf(" NULL");
+    }
+
+
+    int size(struct node* L){
+        struct node* P=L->Next;
+        int sizeCounter=0;
+        while(P!=NULL){
+            sizeCounter++;
+            P=P->Next;
+        }
+        return sizeCounter;
+    }
+
+
+
+    struct node* copyList(struct node* L) {
+        if (L == NULL) {
+            return NULL;
+        }
+
+        struct node* copyList =NULL;
+        copyList= makeEmpty(copyList);;
+
+        struct node* currentOriginal = L->Next;
+        struct node* currentCopy = copyList;
+
+        while (currentOriginal != NULL) {
+            struct node* newNode = (struct node*)malloc(sizeof(struct node));
+            newNode->data = currentOriginal->data;
+            newNode->Next = NULL;
+
+            currentCopy->Next = newNode;
+            currentCopy = newNode;
+
+            currentOriginal = currentOriginal->Next;
+        }
+
+        return copyList;
+    }
+    struct node* getNth(int N, struct node* L) {
+        struct node* current = L->Next;
+        int count = 0;
+
+        while (current != NULL) {
+            if (count == N) {
+                return current;
+            }
+            count++;
+            current = current->Next;
+        }
+
+        return NULL;
+    }
+
+    struct node* getLast(struct node* L) {
+        struct node* current = L->Next;
+
+        while (current != NULL && current->Next != NULL) {
+            current = current->Next;
+        }
+
+        return current;
+    }
+
+    void  concatList(struct node * firstList, struct node * secondList){
+            struct node *p = firstList;
+            while (p->Next != NULL){
+                p = p->Next;            // to arrive to the last node
+            }
+            p->Next = secondList->Next;
+
+             // second = NULL; if i want to disable the second list after i concated it with first list
+        }
+    struct node* findMiddle(struct node* L) {
+
+        int middleIndex=size(L)/2;
+        int counter=0;
+        struct node* p=L->Next;
+        while(p!=NULL){
+            if(counter==middleIndex)
+                return p;
+                p=p->Next;
+                counter++;
+        }
+        return NULL; // if everything work good, we are not arrive to this case.
+    }
+    void linkedListToArray(struct node* L,int arr[]){
+        int i=0;
+        struct node* p=L->Next;
+        while(p!=NULL){
+            arr[i]=p->data;
+            p=p->Next;
+            i++;
+        }
+    }
+    void arrayToLinkedList(int arr[],struct node* L){
+        struct node* p=L->Next;
+        int i=0;
+        while(p!=NULL){
+            p->data=arr[i];
+            i++;
+            p=p->Next;
+        }
+    }
+    void merge(int arr[], int left, int mid, int right) {
+        int i, j, k;
+        int n1 = mid - left + 1;
+        int n2 = right - mid;
+
+        int leftArr[n1], rightArr[n2];
+
+        for (i = 0; i < n1; i++)
+            leftArr[i] = arr[left + i];
+        for (j = 0; j < n2; j++)
+            rightArr[j] = arr[mid + 1 + j];
+
+        i = 0;
+        j = 0;
+        k = left;
+        while (i < n1 && j < n2) {
+            if (leftArr[i] <= rightArr[j]) {
+                arr[k] = leftArr[i];
+                i++;
+            }
+            else {
+                arr[k] = rightArr[j];
+                j++;
+            }
+            k++;
+        }
+
+        while (i < n1) {
+            arr[k] = leftArr[i];
+            i++;
+            k++;
+        }
+
+        while (j < n2) {
+            arr[k] = rightArr[j];
+            j++;
+            k++;
+        }
+    }
+    void mergeSort(int arr[], int left, int right) {
+        if (left < right) {
+            int mid = left + (right - left) / 2;
+            mergeSort(arr, left, mid);
+            mergeSort(arr, mid + 1, right);
+            merge(arr, left, mid, right);
+        }
+    }
+
+void reverseList(struct node* L) {
+    struct node* current = L->Next;
+    struct node* next = NULL;
+    struct node* temp = NULL;
+
+    while (current != NULL) {
+        next = current->Next;
+        current->Next = temp;
+        temp = current;
+        current = next;
+    }
+
+    L->Next = temp;  // to let the head pointer at the last node which it convert to the first one
+}
+    void insertDouble(int X,struct nodeD* L,struct nodeD* p){
+        struct nodeD* temp=(struct nodeD*) malloc(sizeof(struct nodeD));
+        temp->data=X;
+        temp->Next=p->Next;
+        temp->Prev=p;
+        p->Next=temp;
+        p->Next->Prev=temp;
+    }
+    void deleteDouble(int X,struct nodeD* L){
+        struct nodeD* temp=L->Next;
+        while(temp!=NULL&&temp->data!=X){
+            temp=temp->Next;
+        }
+        temp->Next->Prev=temp->Prev;
+        temp->Prev->Next=temp->Next;
+        free(temp);
+    }
