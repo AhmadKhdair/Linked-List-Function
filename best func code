@@ -1,17 +1,41 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
+#define minQueueSize 5
+struct Queue{
+    int front;
+    int rear;
+    int size;
+    int capacity;
+    int *Array;
+};
 struct nodeD{
     int data;
     struct nodeD* Next;
     struct nodeD* Prev;
 };
+
 struct node{
     int data;
     char c;
     struct node* Next;
 };
-
+//Function For Queues:
+struct Queue* createQueue(int maxElements);
+void makeQueueEmpty(struct Queue* Q);
+int isEmptyQueue(struct Queue* Q);
+int isFull(struct Queue* Q );
+void DisposeQueue( struct Queue* Q );
+int Succ(int value,struct Queue* Q);
+void Enqueue(int X,struct Queue* Q);
+void Dequeue(struct Queue* Q);
+int Front(struct Queue* Q);
+int frontAndDequeue(struct Queue* Q);
+void mergeQueues(struct Queue* Q1,struct Queue* Q2);
+int contains(int X,struct Queue* Q);
+int getQueueSize(struct Queue* Q);
+void printQueue(struct Queue* Q);
+struct Queue* attendQueue(struct Queue* Q1,struct Queue* Q2);
 // Function For Stacks :
 int isEmpty(struct node* S);
 struct node* createStack( );
@@ -61,19 +85,27 @@ void mergeSort(int arr[], int left, int right);
 void reverseList(struct node* L);
 int main() {
 
+    struct Queue* q;
+    int i;
+    q = createQueue( 9 );
 
-
-
-    struct node* L = NULL;
-
-    L = makeEmpty(L);
-    char line[20];
-    FILE* file;
-    int valid= postfixEvaluation(file);
-
-
-    printf("\n\n\n%d",valid);
+    for( i=0; i<9; i++ )
+        Enqueue(i, q);
+    printQueue(q);
+    DisposeQueue ( q );
     /*
+    printQueue(Q);
+    Dequeue(Q);
+    printQueue(Q);
+    Dequeue(Q);
+    printQueue(Q);
+    struct Queue* Q2= createQueue(7);
+    for(int i=0;i<Q2->capacity;i++){
+        Enqueue(i,Q2);
+    }
+    printf(" attend\n ");
+    printQueue(attendQueue(Q,Q2));
+
     // إضافة عناصر إلى القائمة
     insert(10, L, L);
     insertFirst(222,L);
@@ -547,44 +579,44 @@ void printStack(struct node* S){
 }
 
 int isRight(){
-        char line[40];
-        FILE* file;
-        file =fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled3\\\\tasks.txt","r");
-        fgets(line,sizeof(line),file);
-        printf("%s",line);
-        struct node* Stack=createStack();
-        makeStackEmpty(Stack);
-        for(int i=0;i<strlen(line);i++){
-            if(line[i]=='(' ||line[i]=='[' ||line[i]=='<'||line[i]=='{' ){
-                PushChar(line[i],Stack);
+    char line[40];
+    FILE* file;
+    file =fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled3\\\\tasks.txt","r");
+    fgets(line,sizeof(line),file);
+    printf("%s",line);
+    struct node* Stack=createStack();
+    makeStackEmpty(Stack);
+    for(int i=0;i<strlen(line);i++){
+        if(line[i]=='(' ||line[i]=='[' ||line[i]=='<'||line[i]=='{' ){
+            PushChar(line[i],Stack);
+        }
+        else if(line[i]==')' ||line[i]==']' ||line[i]=='>'||line[i]=='}'){
+            if((isEmpty(Stack))){
+                printf("\nError Cause Stack Is Empty at first condition");
+                return 0;
             }
-            else if(line[i]==')' ||line[i]==']' ||line[i]=='>'||line[i]=='}'){
-                if((isEmpty(Stack))){
-                    printf("\nError Cause Stack Is Empty at first condition");
-                    return 0;
-                }
-                else{
-                    if( (Top(Stack)->c == '(' && line[i] == ')') ||
+            else{
+                if( (Top(Stack)->c == '(' && line[i] == ')') ||
                     (Top(Stack)->c =='[' &&   line[i] == ']') ||
                     (Top(Stack)->c == '<' &&  line[i] =='>')  ||
                     (Top(Stack)->c == '{' &&  line[i] =='}') ){
-                        printf("8");
-                        Pop(Stack);
-                    }
-                    else{
-                        printf("Error\n");
-                        return -1;
-                    }
+                    printf("8");
+                    Pop(Stack);
+                }
+                else{
+                    printf("Error\n");
+                    return -1;
                 }
             }
         }
-        printf("10");
-        if(!isEmpty(Stack)){
-            printf("11");
-            return -2;
-        }
-        return 1;
     }
+    printf("10");
+    if(!isEmpty(Stack)){
+        printf("11");
+        return -2;
+    }
+    return 1;
+}
 
 void PushChar(char c,struct node* S){
     struct node* temp=(struct node*) malloc(sizeof(struct node));
@@ -596,36 +628,182 @@ void PushChar(char c,struct node* S){
         S->Next=temp;
     }
 
+}
+int postfixEvaluation(FILE* file){
+    file= fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled3\\\\tasks.txt","r");
+    if(file==NULL){
+        printf("Error File");
+        return 0;
     }
-    int postfixEvaluation(FILE* file){
-        file= fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled3\\\\tasks.txt","r");
-        if(file==NULL){
-            printf("Error File");
-            return 0;
+    char postfix[30];
+    fgets(postfix,sizeof(postfix),file);
+    struct node* stack=(struct node*) malloc(sizeof(struct node));
+    for(int i=0;i< strlen(postfix);i++){
+        if((postfix[i]-'0')>=0 && (postfix[i]-'0') < 10 ){
+            Push(postfix[i]-'0',stack);
         }
-        char postfix[30];
-        fgets(postfix,sizeof(postfix),file);
-        struct node* stack=(struct node*) malloc(sizeof(struct node));
-        for(int i=0;i< strlen(postfix);i++){
-            if((postfix[i]-'0')>=0 && (postfix[i]-'0') < 10 ){
-                Push(postfix[i]-'0',stack);
-            }
-            else if(postfix[i]!=' '){
-                int x2= Top(stack)->data;
-                Pop(stack);
-                int x1= Top(stack)->data;
-                Pop(stack);
-                int result;
-                if(postfix[i]=='/')
-                    result=x1/x2;
-                else if (postfix[i]=='-')
-                    result=x1-x2;
-                else if(postfix[i]=='*')
-                    result=x1*x2;
-                else
-                    result=x1+x2;
-                Push(result,stack);
-            }
+        else if(postfix[i]!=' '){
+            int x2= Top(stack)->data;
+            Pop(stack);
+            int x1= Top(stack)->data;
+            Pop(stack);
+            int result;
+            if(postfix[i]=='/')
+                result=x1/x2;
+            else if (postfix[i]=='-')
+                result=x1-x2;
+            else if(postfix[i]=='*')
+                result=x1*x2;
+            else
+                result=x1+x2;
+            Push(result,stack);
         }
-        return Top(stack)->data;
+    }
+    return Top(stack)->data;
+}
+
+
+
+
+
+    int isEmptyQueue(struct Queue* Q){
+        return Q->size==0;
+    }
+
+    int isFull( struct Queue* Q ){
+        return Q->size==Q->capacity;
+    }
+
+    void makeQueueEmpty(struct Queue* Q){
+        Q->front=1;
+        Q->rear=0;
+        Q->size=0;
+    }
+
+    struct Queue* createQueue(int maxElements){
+        if(maxElements<minQueueSize){
+            printf("Queue Is Too Small . .");
+            return NULL;
+        }
+        struct Queue* Q=(struct Queue*) malloc(sizeof(struct Queue));
+        if(Q==NULL){
+            printf("Out Of Memory . .");
+            return NULL;
+        }
+        Q->Array=(int *) malloc(sizeof(int)*maxElements );
+        if(Q->Array==NULL){
+            printf("Out Of Memory . .");
+            return NULL;
+        }
+        Q->capacity=maxElements;
+        makeQueueEmpty(Q);
+        return Q;
+    }
+
+    void DisposeQueue( struct Queue* Q ){
+        if( Q != NULL ){
+            free( Q->Array );
+            free( Q );
+        }
+    }
+
+    int Succ(int value,struct Queue* Q){
+
+        if(++value == Q->capacity)
+            value=0;
+
+        return value;
+    }
+
+    void Enqueue(int X,struct Queue* Q){
+        if(isFull(Q)){
+            printf("Full Queue");
+        }
+        else{
+            (Q->size)++;
+            Q->rear=Succ(Q->rear,Q);
+            Q->Array[Q->rear]=X;
+        }
+    }
+    void Dequeue(struct Queue* Q){
+        if(isEmptyQueue(Q))
+            printf("Empty Queue");
+        else{
+            Q->size--;
+            Q->front= Succ(Q->front,Q);
+        }
+    }
+    int Front(struct Queue* Q){
+        if(!isEmptyQueue(Q))
+            return Q->Array[Q->front];
+        printf("Empty Queue");
+        return -1;
+    }
+    int frontAndDequeue(struct Queue* Q){
+        int X=0;
+        if(isEmptyQueue(Q)){
+            printf("Empty Queue");
+            return -1;
+        }
+        else{
+            Q->size--;
+            X=Q->Array[Q->front];
+            Q->front= Succ(Q->front,Q);
+        }
+        return X;
+    }
+
+    void mergeQueues(struct Queue* Q1,struct Queue* Q2){
+        while(!isEmptyQueue(Q2)){
+            Enqueue(frontAndDequeue(Q2),Q1);
+        }
+    }
+
+    int contains(int X,struct Queue* Q){
+        int isFound=0;
+        struct Queue* temp= createQueue(Q->capacity);
+        while(!isEmptyQueue(Q)){
+            if(Front(Q)==X)
+                isFound=1;
+            Enqueue(frontAndDequeue(Q),temp);
+        }
+        while(!isEmptyQueue(temp))
+            Enqueue(frontAndDequeue(temp),Q);
+        DisposeQueue(temp);
+        return isFound;
+    }
+
+    int getQueueSize(struct Queue* Q){
+        return Q->capacity;
+    }
+
+    void printQueue(struct Queue* Q){
+        struct Queue* tempQueue= createQueue(Q->capacity);
+
+        while(!isEmptyQueue(Q)){
+            printf("%d ", Front(Q));
+            Enqueue(frontAndDequeue(Q),tempQueue);
+        }
+        printf("\n");
+        while (!isEmptyQueue(tempQueue)){
+            Enqueue(frontAndDequeue(tempQueue),Q);
+        }
+        DisposeQueue(tempQueue);
+    }
+
+    struct Queue* attendQueue(struct Queue* Q1,struct Queue* Q2){
+        struct Queue* attendQueue= createQueue(getQueueSize(Q1)+getQueueSize(Q2));
+        if(attendQueue==NULL){
+            printf("out of memory");
+            return NULL;
+        }
+        while(!isEmptyQueue(Q1)){
+            Enqueue(frontAndDequeue(Q1),attendQueue);
+        }
+        DisposeQueue(Q1);
+        while(!isEmptyQueue(Q2)){
+            Enqueue(frontAndDequeue(Q2),attendQueue);
+        }
+        DisposeQueue(Q2);
+        return attendQueue;
     }
