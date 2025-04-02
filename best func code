@@ -564,24 +564,18 @@ void DisposeStack( struct node* S ){
     free( S );
 }
 
-struct node* copyStack(struct node* S) {
-    struct node* newStack = createStack();
-    struct node* temp = S->Next;
-    while (temp != NULL) {
-        Push(temp->data, newStack);
-        temp = temp->Next;
-    }
-    return newStack;
-}
 
 void printStack(struct node* S){
-    struct node* temp = S->Next;
-    printf("TOP=S [  |-]-> ");
-    while (temp != NULL) {
-        printf("%d -> ", temp->data);
-        temp = temp->Next;
+    struct node* temp=createStack();
+    while(Top(S)!=NULL){
+        printf("%d",Top(S)->data);
+        Push(Top(S)->data,temp);
+        Pop(S);
     }
-    printf("NULL\n");
+    while(Top(temp)!=NULL){
+        Push(Top(temp)->data,S);
+        Pop(temp);
+    }
 }
 
 int isRight(){
