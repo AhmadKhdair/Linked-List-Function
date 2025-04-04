@@ -47,7 +47,7 @@ void Push(int X,struct node* S);
 void PushChar(char c,struct node* S);
 void DisposeStack( struct node* S );
 int size(struct node* S);
-// void reverseList(struct node* S);
+struct node* reverseStack(struct node* S) ;
 void printStack(struct node* S);
 void copyStack(struct node* originalStack, struct node* newStack);
 int isRight();
@@ -591,6 +591,17 @@ void copyStack(struct node* originalStack, struct node* newStack) {
         Push(Top(temp)->data, newStack);  // إضافة العنصر إلى الستاك الجديد
         Pop(temp);  // إزالة العنصر من الستاك المؤقت
     }
+}
+
+struct node* reverseStack(struct node* S) {
+    struct node* temp = createStack();  // إنشاء ستاك مؤقت لتخزين العناصر
+
+    // استخدم دالة مساعدة لإزالة العنصر من الستاك وإضافته إلى الستاك المؤقت
+    while (Top(S) != NULL) {
+        Push(Top(S)->data, temp);  // إضافة العنصر إلى الستاك المؤقت
+        Pop(S);  // إزالة العنصر من الستاك الأصلي
+    }
+    return temp;
 }
 
 int isRight(){
