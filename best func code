@@ -51,7 +51,7 @@ struct node* reverseStack(struct node* S) ;
 void printStack(struct node* S);
 void copyStack(struct node* originalStack, struct node* newStack);
 int isRight();
-int postfixEvaluation(FILE* file);
+int postfixEvaluation();
 
 
 // Function For Double Linked List :
@@ -85,14 +85,9 @@ void merge(int arr[], int left, int mid, int right);
 void mergeSort(int arr[], int left, int right);
 void reverseList(struct node* L);
 int main() {
+    FILE file;
+    printf("%d", postfixEvaluation(&file));
 
-   struct Queue* queue= createQueue(5);
-    Enqueue(15,queue);
-    Enqueue(20,queue);
-    Dequeue(queue);
-    Enqueue(30,queue);
-    printQueue(queue);
-    
 
     /*
 
@@ -610,10 +605,12 @@ struct node* reverseStack(struct node* S) {
 }
 
 int isRight(){
-    char line[40];
+    char line[40]="{test} i donmt know if its work().{";
+
     FILE* file;
     file =fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled3\\\\tasks.txt","r");
-    fgets(line,sizeof(line),file);
+    //fgets(line,sizeof(line),file);
+
     printf("%s",line);
     struct node* Stack=createStack();
     makeStackEmpty(Stack);
@@ -631,7 +628,6 @@ int isRight(){
                     (Top(Stack)->c =='[' &&   line[i] == ']') ||
                     (Top(Stack)->c == '<' &&  line[i] =='>')  ||
                     (Top(Stack)->c == '{' &&  line[i] =='}') ){
-                    printf("8");
                     Pop(Stack);
                 }
                 else{
@@ -641,9 +637,7 @@ int isRight(){
             }
         }
     }
-    printf("10");
     if(!isEmpty(Stack)){
-        printf("11");
         return -2;
     }
     return 1;
@@ -660,35 +654,38 @@ void PushChar(char c,struct node* S){
     }
 
 }
-int postfixEvaluation(FILE* file){
-    file= fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled3\\\\tasks.txt","r");
+int postfixEvaluation(){
+    FILE* file= fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled4\\\\task.txt","r");
     if(file==NULL){
         printf("Error File");
         return 0;
     }
     char postfix[30];
-    fgets(postfix,sizeof(postfix),file);
-    struct node* stack=(struct node*) malloc(sizeof(struct node));
-    for(int i=0;i< strlen(postfix);i++){
-        if((postfix[i]-'0')>=0 && (postfix[i]-'0') < 10 ){
-            Push(postfix[i]-'0',stack);
+    fgets(postfix,30,file);
+    struct node* stack=createStack();
+    char* tok= strtok(postfix," ");
+    while(tok!=NULL){
+
+        if(tok[0]-'0'>=0 && tok[0]-'0'<=9){ //asci for 0 is 42 , for 1 43 , so if do ( 43-42) i get the value of the number
+            Push(atoi(tok),stack);
         }
-        else if(postfix[i]!=' '){
+        else {
             int x2= Top(stack)->data;
             Pop(stack);
             int x1= Top(stack)->data;
             Pop(stack);
             int result;
-            if(postfix[i]=='/')
+            if(tok[0]=='/')
                 result=x1/x2;
-            else if (postfix[i]=='-')
+            else if (tok[0]=='-')
                 result=x1-x2;
-            else if(postfix[i]=='*')
+            else if(tok[0]=='*')
                 result=x1*x2;
             else
                 result=x1+x2;
             Push(result,stack);
         }
+        tok= strtok(NULL," ");
     }
     return Top(stack)->data;
 }
