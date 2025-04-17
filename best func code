@@ -31,11 +31,11 @@ void Enqueue(int X,struct Queue* Q);
 void Dequeue(struct Queue* Q);
 int Front(struct Queue* Q);
 int frontAndDequeue(struct Queue* Q);
-void mergeQueues(struct Queue* Q1,struct Queue* Q2);
+void mergeQueues(struct Queue* Q1,struct Queue* Q2); //merge q2 into q1 if it possible
 int contains(int X,struct Queue* Q);
 int getQueueSize(struct Queue* Q);
-void printQueue(struct Queue* Q);
-struct Queue* attendQueue(struct Queue* Q1,struct Queue* Q2);
+void printQueue(struct Queue* Q); // print queue without cross the condition( pointer at the first and at the end only)
+struct Queue* attendQueue(struct Queue* Q1,struct Queue* Q2); // return a new queue(Q1+Q2) with delete q1,q2
 
 // Function For Stacks :
 int isEmpty(struct node* S);
@@ -86,101 +86,106 @@ void mergeSort(int arr[], int left, int right);
 void reverseList(struct node* L);
 int main() {
 
-    struct Queue* q;
-    int i;
-    q = createQueue( 30 );
-    struct Queue*  q2= createQueue( 7 );
+   struct Queue* queue= createQueue(5);
+    Enqueue(15,queue);
+    Enqueue(20,queue);
+    Dequeue(queue);
+    Enqueue(30,queue);
+    printQueue(queue);
+    
 
-    for( i=0; i<7; i++ )
-        Enqueue(i, q2);
-    for( i=30; i<48; i++ )
-        Enqueue(i, q);
-    struct Queue*  q3;
-    q3= attendQueue(q,q2);
-    printQueue(q3);
-    DisposeQueue ( q2 );
     /*
-    printQueue(Q);
-    Dequeue(Q);
-    printQueue(Q);
-    Dequeue(Q);
-    printQueue(Q);
-    struct Queue* Q2= createQueue(7);
-    for(int i=0;i<Q2->capacity;i++){
-        Enqueue(i,Q2);
-    }
-    printf(" attend\n ");
-    printQueue(attendQueue(Q,Q2));
 
-    // إضافة عناصر إلى القائمة
-    insert(10, L, L);
-    insertFirst(222,L);
-    insert(20, L, L);
-    insertLast(333,L);
-    insertLast(143,L);
-    int arr[size(L)];
+struct Queue* queue2= createQueue(25);
+Enqueue(70,queue2);
+Enqueue(80,queue2);
+Enqueue(90,queue2);
+printQueue(queue2);
+struct Queue* q=attendQueue(queue,queue2);
+printQueue(q);
 
-    linkedListToArray(L,arr);
-    for(int i=0;i< size(L);i++)
-        printf("%d ",arr[i]);
-    mergeSort(arr,0, size(L)-1);
-    printf("\n\n\n");
-    for(int i=0;i< size(L);i++)
-        printf("%d ",arr[i]);
-    printf("\n\n\n");
+/*
+printQueue(Q);
+Dequeue(Q);
+printQueue(Q);
+Dequeue(Q);
+printQueue(Q);
+struct Queue* Q2= createQueue(7);
+for(int i=0;i<Q2->capacity;i++){
+    Enqueue(i,Q2);
+}
+printf(" attend\n ");
+printQueue(attendQueue(Q,Q2));
 
-    arrayToLinkedList(arr,L);
-    printList(L);
-    // طباعة القائمة 1
-    printf("List after insertion: ");
-    printList(L);
-    printf("\n");
-    DeleteLast(L);
-    printf(" list after delete last ");
-    PrintList(L);
-    printf("Middle date:%d",FindMiddle(L)->data);
-    struct node* List2= CopyList(L);
-    // طباعة القائمة 2
+// إضافة عناصر إلى القائمة
+insert(10, L, L);
+insertFirst(222,L);
+insert(20, L, L);
+insertLast(333,L);
+insertLast(143,L);
+int arr[size(L)];
 
-    printf("The copied List :");
-    PrintList(List2);
+linkedListToArray(L,arr);
+for(int i=0;i< size(L);i++)
+    printf("%d ",arr[i]);
+mergeSort(arr,0, size(L)-1);
+printf("\n\n\n");
+for(int i=0;i< size(L);i++)
+    printf("%d ",arr[i]);
+printf("\n\n\n");
 
-    // العثور على عنصر
-    struct node* foundNode = Find(13, L);
-    if (foundNode != NULL) {
-        printf("\nNode with data 20 found: %d\n", foundNode->data);
-    }
+arrayToLinkedList(arr,L);
+printList(L);
+// طباعة القائمة 1
+printf("List after insertion: ");
+printList(L);
+printf("\n");
+DeleteLast(L);
+printf(" list after delete last ");
+PrintList(L);
+printf("Middle date:%d",FindMiddle(L)->data);
+struct node* List2= CopyList(L);
+// طباعة القائمة 2
 
-    // حذف عنصر
-    Delete(10, L);
-    printf("\nList after deletion of 33: ");
-    PrintList(L);
-    DeleteLast(L);
-    printf(" list after delete last ");
-    PrintList(L);
-    printf("\nMiddle date:%d",FindMiddle(L)->data);
+printf("The copied List :");
+PrintList(List2);
 
-    printf("\n");
-    PrintList(List2);
+// العثور على عنصر
+struct node* foundNode = Find(13, L);
+if (foundNode != NULL) {
+    printf("\nNode with data 20 found: %d\n", foundNode->data);
+}
 
-    // حجم القائمة
-    int size = Size(L);
-    printf("\nSize of the list: %d\n", size);
+// حذف عنصر
+Delete(10, L);
+printf("\nList after deletion of 33: ");
+PrintList(L);
+DeleteLast(L);
+printf(" list after delete last ");
+PrintList(L);
+printf("\nMiddle date:%d",FindMiddle(L)->data);
 
-    // حذف كل العناصر
-    int size2=Size(List2);
-    printf("\nSize of the list2: %d\n", size2);
+printf("\n");
+PrintList(List2);
 
-    //DeleteList(L);
-    printf("List after deleting all elements: ");
-    PrintList(L);
-    printf("\n");
-    PrintList(List2);
-    printf("%d",Size(L));
-    printf("%d",Size(List2));
-    printf("\n\n");
-    ConcatList(L,List2);
-    PrintList(L   );
+// حجم القائمة
+int size = Size(L);
+printf("\nSize of the list: %d\n", size);
+
+// حذف كل العناصر
+int size2=Size(List2);
+printf("\nSize of the list2: %d\n", size2);
+
+//DeleteList(L);
+printf("List after deleting all elements: ");
+PrintList(L);
+printf("\n");
+PrintList(List2);
+printf("%d",Size(L));
+printf("%d",Size(List2));
+printf("\n\n");
+ConcatList(L,List2);
+PrintList(L   );
 */
     return 0;
 }
@@ -692,144 +697,156 @@ int postfixEvaluation(FILE* file){
 
 
 
-    int isEmptyQueue(struct Queue* Q){
-        return Q->size==0;
-    }
+int isEmptyQueue(struct Queue* Q){
+    return Q->size==0;
+}
 
-    int isFull( struct Queue* Q ){
-        return Q->size==Q->capacity;
-    }
+int isFull( struct Queue* Q ){
+    return Q->size==Q->capacity;
+}
 
-    void makeQueueEmpty(struct Queue* Q){
-        Q->front=1;
-        Q->rear=0;
-        Q->size=0;
-    }
+void makeQueueEmpty(struct Queue* Q){
+    Q->front=1;
+    Q->rear=0;
+    Q->size=0;
+}
 
-    struct Queue* createQueue(int maxElements){
-        if(maxElements<minQueueSize){
-            printf("Queue Is Too Small . .");
-            return NULL;
-        }
-        struct Queue* Q=(struct Queue*) malloc(sizeof(struct Queue));
-        if(Q==NULL){
-            printf("Out Of Memory . .");
-            return NULL;
-        }
-        Q->Array=(int *) malloc(sizeof(int)*maxElements );
-        if(Q->Array==NULL){
-            printf("Out Of Memory . .");
-            return NULL;
-        }
-        Q->capacity=maxElements;
-        makeQueueEmpty(Q);
-        return Q;
+struct Queue* createQueue(int maxElements){
+    if(maxElements<minQueueSize){
+        printf("Queue Is Too Small . .");
+        return NULL;
     }
-
-    void DisposeQueue( struct Queue* Q ){
-        if( Q != NULL ){
-            free( Q->Array );
-            free( Q );
-        }
+    struct Queue* Q=(struct Queue*) malloc(sizeof(struct Queue));
+    if(Q==NULL){
+        printf("Out Of Memory . .");
+        return NULL;
     }
-
-    int Succ(int value,struct Queue* Q){
-
-        if(++value == Q->capacity)
-            value=0;
-
-        return value;
+    Q->Array=(int *) malloc(sizeof(int)*maxElements );
+    if(Q->Array==NULL){
+        printf("Out Of Memory . .");
+        return NULL;
     }
+    Q->capacity=maxElements;
+    makeQueueEmpty(Q);
+    return Q;
+}
 
-    void Enqueue(int X,struct Queue* Q){
-        if(isFull(Q)){
-            printf("Full Queue");
-        }
-        else{
-            (Q->size)++;
-            Q->rear=Succ(Q->rear,Q);
-            Q->Array[Q->rear]=X;
-        }
+void DisposeQueue( struct Queue* Q ){
+    if( Q != NULL ){
+        free( Q->Array );
+        free( Q );
     }
-    void Dequeue(struct Queue* Q){
-        if(isEmptyQueue(Q))
-            printf("Empty Queue");
-        else{
-            Q->size--;
-            Q->front= Succ(Q->front,Q);
-        }
+}
+
+int Succ(int value,struct Queue* Q){
+
+    if(++value == Q->capacity)
+        value=0;
+
+    return value;
+}
+
+void Enqueue(int X,struct Queue* Q){
+    if(isFull(Q)){
+        printf("Full Queue");
     }
-    int Front(struct Queue* Q){
-        if(!isEmptyQueue(Q))
-            return Q->Array[Q->front];
+    else{
+        (Q->size)++;
+        Q->rear=Succ(Q->rear,Q);
+        Q->Array[Q->rear]=X;
+    }
+}
+/*
+void Succ(struct Queue* Q) {
+    if (++(Q->rear) == Q->capacity)
+        Q->rear = 0;
+}*/
+
+void Dequeue(struct Queue* Q){
+    if(isEmptyQueue(Q))
+        printf("Empty Queue");
+    else{
+        Q->size--;
+        Q->front= Succ(Q->front,Q);
+    }
+}
+int Front(struct Queue* Q){
+    if(!isEmptyQueue(Q))
+        return Q->Array[Q->front];
+    printf("Empty Queue");
+    return -1;
+}
+int frontAndDequeue(struct Queue* Q){
+    int X=0;
+    if(isEmptyQueue(Q)){
         printf("Empty Queue");
         return -1;
     }
-    int frontAndDequeue(struct Queue* Q){
-        int X=0;
-        if(isEmptyQueue(Q)){
-            printf("Empty Queue");
-            return -1;
-        }
-        else{
-            Q->size--;
-            X=Q->Array[Q->front];
-            Q->front= Succ(Q->front,Q);
-        }
-        return X;
+    else{
+        Q->size--;
+        X=Q->Array[Q->front];
+        Q->front= Succ(Q->front,Q);
     }
+    return X;
+}
 
-    void mergeQueues(struct Queue* Q1,struct Queue* Q2){
+void mergeQueues(struct Queue* Q1,struct Queue* Q2){
+    int emptyCells=Q1->capacity - Q1->size;
+    if(emptyCells<Q2->size) {
+        printf("There is No Enough Empty Cells At First Queue To Merge Process ");
+    }
+    else{
         while(!isEmptyQueue(Q2)){
             Enqueue(frontAndDequeue(Q2),Q1);
         }
     }
-
-    int contains(int X,struct Queue* Q){
-        int isFound=0;
-        struct Queue* temp= createQueue(Q->capacity);
-        while(!isEmptyQueue(Q)){
-            if(Front(Q)==X)
-                isFound=1;
-            Enqueue(frontAndDequeue(Q),temp);
-        }
-        while(!isEmptyQueue(temp))
-            Enqueue(frontAndDequeue(temp),Q);
-        DisposeQueue(temp);
-        return isFound;
+}
+int contains(int X,struct Queue* Q){
+    int isFound=0;
+    struct Queue* temp= createQueue(Q->capacity);
+    while(!isEmptyQueue(Q)){
+        if(Front(Q)==X)
+            isFound=1;
+        Enqueue(frontAndDequeue(Q),temp);
     }
+    while(!isEmptyQueue(temp))
+        Enqueue(frontAndDequeue(temp),Q);
+    DisposeQueue(temp);
+    return isFound;
+}
 
-    int getQueueSize(struct Queue* Q){
-        return Q->size;
+
+int getQueueSize(struct Queue* Q){
+    return Q->size;
+}
+
+void printQueue(struct Queue* Q){
+    struct Queue* tempQueue= createQueue(Q->capacity);
+
+    while(!isEmptyQueue(Q)){
+        printf("%d ", Front(Q));
+        Enqueue(frontAndDequeue(Q),tempQueue);
     }
-
-    void printQueue(struct Queue* Q){
-        struct Queue* tempQueue= createQueue(Q->capacity);
-
-        while(!isEmptyQueue(Q)){
-            printf("%d ", Front(Q));
-            Enqueue(frontAndDequeue(Q),tempQueue);
-        }
-        printf("\n");
-        while (!isEmptyQueue(tempQueue)){
-            Enqueue(frontAndDequeue(tempQueue),Q);
-        }
-        DisposeQueue(tempQueue);
+    printf("\n");
+    while (!isEmptyQueue(tempQueue)){
+        Enqueue(frontAndDequeue(tempQueue),Q);
     }
+    DisposeQueue(tempQueue);
+}
 
-    struct Queue* attendQueue(struct Queue* Q1,struct Queue* Q2){
-        struct Queue* attendQueue= createQueue(Q1->capacity+Q2->capacity);
-        if(attendQueue==NULL){
-            printf("out of memory");
-            return NULL;
-        }
-        while(!isEmptyQueue(Q1)){
-            Enqueue(frontAndDequeue(Q1),attendQueue);
-        }
-        DisposeQueue(Q1);
-        while(!isEmptyQueue(Q2)){
-            Enqueue(frontAndDequeue(Q2),attendQueue);
-        }
-        DisposeQueue(Q2);
-        return attendQueue;
+struct Queue* attendQueue(struct Queue* Q1,struct Queue* Q2){
+    struct Queue* attendQueue= createQueue(Q1->capacity+Q2->capacity);
+    if(attendQueue==NULL){
+        printf("out of memory");
+        return NULL;
     }
+    while(!isEmptyQueue(Q1)){
+        Enqueue(frontAndDequeue(Q1),attendQueue);
+    }
+    DisposeQueue(Q1);
+    while(!isEmptyQueue(Q2)){
+        Enqueue(frontAndDequeue(Q2),attendQueue);
+    }
+    DisposeQueue(Q2);
+    return attendQueue;
+}
