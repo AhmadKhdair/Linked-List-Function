@@ -847,3 +847,26 @@ struct Queue* attendQueue(struct Queue* Q1,struct Queue* Q2){
     DisposeQueue(Q2);
     return attendQueue;
 }
+
+int infixToPostfix(char infix[]){
+    int i=0,j=0;
+    char postfix[30];
+    struct node* stack=createStack();
+    while (infix[i]!='\0'){
+        char chr=infix[i];
+        switch (chr) {
+            case '(':
+                PushChar(('('),stack);
+                break;
+            case ')':
+                while(Top(stack)->c!='('){
+                    postfix[j++]=Top(stack)->c;
+                    Pop(stack);
+                }
+                break;
+            default:
+                postfix[j++]=chr;
+        }
+
+    }
+}
