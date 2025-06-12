@@ -1,0 +1,277 @@
+#include <stdio.h>
+#include <stdlib.h> // For malloc, free, atoi, exit
+#include <string.h> // For strcpy, strtok, strcspn
+#include <time.h>
+#include <limits.h> // For INT_MAX (though not directly used in load, good to have)
+
+// --- Constants ---
+#define MAX_CITIES 100         // Maximum number of cities the graph can hold
+#define MAX_NAME_LENGTH 50     // Maximum length for a city name
+
+// --- Structures Definitions ---
+
+// 1. Structure for an Adjacency List Node
+struct AdjListNode {
+    int dest_city_id;       // ID (index) of the destination city
+    int weight;             // Weight (distance) of the edge
+    struct AdjListNode* next; // Pointer to the next node in this city's adjacency list
+};
+
+// 2. Structure for the entire Graph
+struct Graph {
+    int num_cities;                     // Current number of cities in the graph
+    char city_names[MAX_CITIES][MAX_NAME_LENGTH]; // Array to store city names (index is city ID)
+    struct AdjListNode* adjList[MAX_CITIES]; // Array of head pointers for each city's list
+    // (We will add the 'edges for Kruskal's' later when we implement Kruskal's)
+};
+
+// --- GLOBAL GRAPH INSTANCE ---
+struct Graph my_graph; // Declared globally
+
+// --- Function Prototypes (Declarations) ---
+// These tell the compiler about the functions before they are defined.
+struct AdjListNode* createAdjListNode(int dest_id, int weight);
+int findCityIndex(char city_name[]);
+int addCity(char city_name[]);
+void loadCities();
+//////////
+void applyPrimsAlgorithm(int source_id); // الدالة الرئيسية لـ Prim's
+int findMinKeyVertex(int key[], int inMST[], int num_cities); // دالة مساعدة لـ Prim's
+void printMenu();
+// --- Main Function ---
+int main() {
+    int isLoaded=0;
+    int choice;
+    do{
+        printMenu();
+        scanf("%d",&choice);
+            switch (choice) {
+                case 1:
+                    if(isLoaded==0){
+                        loadCities();
+                        isLoaded=1;
+                    }
+                    else
+                        printf("Cities Already Loaded");
+                    break;
+                case 2:
+                        printf("Enter The Name of City To Started By it :");
+                        char primsCityName[MAX_NAME_LENGTH];
+                        gets(primsCityName);
+                        gets(primsCityName);
+                    int i=findCityIndex(primsCityName);
+                        if(i!=-1)
+                            applyPrimsAlgorithm(i);
+                        else
+                            printf("There is No City Loaded With this Name . .");
+                        break;
+                default: printf("undefined option");
+            }
+    }while(choice!=5);
+    return 0;
+}
+void printMenu(){
+    printf("\n1. Load cities\n2. Apply Prim’s Algorithm\n3. Apply Kruskal’s Algorithm\n4. Compare the two algorithms\nEnter Your Option:");
+}
+// --- Function Implementations (Definitions) ---
+// All function bodies will be placed below main() as requested.
+
+// Helper: Creates a new AdjListNode
+struct AdjListNode* createAdjListNode(int dest_id, int weight) {
+    struct AdjListNode* newNode = (struct AdjListNode*)malloc(sizeof(struct AdjListNode));
+    if (newNode == NULL) {
+        fprintf(stderr, "Memory allocation failed for AdjListNode.\n");
+        return NULL;
+    }
+    newNode->dest_city_id = dest_id;
+    newNode->weight = weight;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Helper: Finds city index by name (accesses global my_graph)
+int findCityIndex(char city_name[]) { // by this function , i can find the index of the city which i have the name of it,
+    //normal implementation, linear traversal on the array of the linked list which they are the connection, if i found the city, i return the index
+    // if we dont find the city, i return the -1 whivh its mean not found
+    for (int i = 0; i < my_graph.num_cities; i++)
+        if (strcmp(my_graph.city_names[i], city_name) == 0)
+            return i;                                            //
+    return -1;
+}
+
+// Helper: Adds city to graph if not exists (modifies global my_graph)
+int addCity(char city_name[]) {
+    int i = findCityIndex(city_name);
+    if (i != -1)  // if its true thats mean the city is already at the array,
+        return i;
+
+    if (my_graph.num_cities < MAX_CITIES) {
+        strcpy(my_graph.city_names[my_graph.num_cities], city_name);
+        my_graph.num_cities++;
+        return my_graph.num_cities - 1; // i let an Id for each city, and this is the equation for it . .
+    }
+
+    printf("Your Reach The Maximum Number of Cities . .\n");
+    return -1;
+}
+
+
+// Function to Load Cities from File
+void loadCities() {
+    FILE *file = fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled9\\\\cities.txt", "r");
+    if (file == NULL) {
+        printf("Error: Cannot open cities.txt file! Please ensure the file is in the same directory as the executable.\n");
+        return;
+    }
+
+    // Initialize the global graph structure for a fresh load
+    my_graph.num_cities = 0;
+    char line[MAX_NAME_LENGTH * 2 + 2 + 3];
+    printf("Loading cities from file...\n");
+    char citysrc[MAX_NAME_LENGTH];
+    char citydes[MAX_NAME_LENGTH];
+    int weight;
+
+    while (fgets(line, (MAX_NAME_LENGTH * 2 + 2 + 3), file) != NULL) {
+        char *tok = strtok(line, "#");
+        strcpy(citysrc, tok);
+
+        tok = strtok(NULL, "#");
+        strcpy(citydes, tok);
+
+        tok = strtok(NULL, "#");
+        weight = atoi(tok);
+
+        int src_id = addCity(citysrc);
+        int dest_id = addCity(citydes);
+        if (src_id == -1 || dest_id == -1)
+            return; //this case if the number of cities is larger than the number of maximum number of cities, so i should stop adding cities thats why i do return . .
+
+
+        struct AdjListNode *newNode1 = createAdjListNode(dest_id, weight);
+        newNode1->next = my_graph.adjList[src_id];
+        my_graph.adjList[src_id] = newNode1;
+
+        // Add edge from dest_id to src_id (undirected graph)
+        struct AdjListNode *newNode2 = createAdjListNode(src_id, weight);
+        newNode2->next = my_graph.adjList[dest_id];
+        my_graph.adjList[dest_id] = newNode2;
+    }
+    fclose(file);
+    printf("Graph loaded successfully!\n");
+    printf("Graph Order (Number of vertices/cities): %d\n", my_graph.num_cities);
+    printf("\nCities loaded:\n");
+    /*
+    for (int i = 0; i < my_graph.num_cities; i++) {
+        printf("%d. %s\n", i + 1, my_graph.city_names[i]);
+    }
+
+    // Optional: Print Adjacency List to verify structure
+    printf("\n--- Adjacency List Representation ---\n");
+    for (int i = 0; i < my_graph.num_cities; i++) {
+        printf("%s (ID %d): ", my_graph.city_names[i], i);
+        struct AdjListNode* current = my_graph.adjList[i];
+        while (current != NULL) {
+            printf("-> %s (ID %d) [%d km] ",
+                   my_graph.city_names[current->dest_city_id],
+                   current->dest_city_id,
+                   current->weight);
+            current = current->next;
+        }
+        printf("\n");
+    }
+    printf("-----------------------------------\n");
+    */
+}
+
+
+// Helper function for Prim's: Finds the vertex with the minimum key value,
+// from the set of vertices not yet included in MST
+int findMinKeyVertex(int key[], int inMST[], int num_cities) {
+    int min_key = INT_MAX;
+    int min_index = -1;
+
+    for (int v = 0; v < num_cities; v++) {
+        if (inMST[v] == 0 && key[v] < min_key) {
+            min_key = key[v];
+            min_index = v;
+        }
+    }
+    return min_index;
+}
+// Function to apply Prim's Algorithm
+void applyPrimsAlgorithm(int source_id) {
+    // Step 1: Initialize data structures for Prim's
+    // هذه المصفوفات ستكون محلية للدالة
+    int key[MAX_CITIES];
+    int parent[MAX_CITIES];
+    int inMST[MAX_CITIES];
+
+    // Initialize all keys to infinity, parents to -1, and inMST to false
+    for (int i = 0; i < my_graph.num_cities; i++) {
+        key[i] = INT_MAX;
+        parent[i] = -1;
+        inMST[i] = 0; // Or 0 if using int
+    }
+
+    // Set key value for the source vertex to 0
+    key[source_id] = 0;
+
+    // Start measuring time
+    clock_t start_time = clock();
+
+    // Step 2: Main loop for Prim's Algorithm
+    // The MST will have (num_cities - 1) edges.
+    // The loop runs num_cities times to include all vertices.
+    for (int count = 0; count < my_graph.num_cities; count++) {
+        // Find the vertex with the minimum key value, from the set of vertices not yet included in MST
+        int u = findMinKeyVertex(key, inMST, my_graph.num_cities);
+
+        // If no vertex found (should not happen in a connected graph after first step)
+        if (u == -1) {
+            fprintf(stderr, "Error: Prim's algorithm could not find a vertex with min key. Graph might be disconnected or an error occurred.\n");
+            break; // Exit the loop
+        }
+
+        // Add the selected vertex to the MST
+        inMST[u] = 1; // Or 1 if using int
+
+        // Update key values and parent index of the adjacent vertices of the picked vertex
+        // Iterate through all neighbors of u
+        struct AdjListNode* current = my_graph.adjList[u];
+        while (current != NULL) {
+            int v = current->dest_city_id; // The neighbor's ID
+            int edge_weight = current->weight; // The weight of the edge (u, v)
+
+            // If v is not yet in MST and weight of (u,v) is smaller than current key[v]
+            if (inMST[v] == 0 && edge_weight < key[v]) {
+                parent[v] = u;
+                key[v] = edge_weight;
+            }
+            current = current->next;
+        }
+    }
+
+    // End measuring time
+    clock_t end_time = clock();
+    double cpu_time_used = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
+
+    // Step 3: Print the result (MST and total cost)
+    printf("\n--- Prim's Algorithm Result ---\n");
+    printf("Minimum Spanning Tree (MST) Edges:\n");
+    int total_prim_cost = 0;
+    // Start from 1 to skip the source node (or iterate through all if parent is -1)
+    for (int i = 0; i < my_graph.num_cities; i++) {
+        if (parent[i] != -1) { // If this vertex has a parent in MST (i.e., it's not the source or it's connected)
+            printf("%s - %s : %d km\n",
+                   my_graph.city_names[parent[i]],
+                   my_graph.city_names[i],
+                   key[i]); // key[i] now holds the weight of the edge that connected i to its parent
+            total_prim_cost += key[i];
+        }
+    }
+
+    printf("Total MST Cost (Prim's): %d km\n", total_prim_cost);
+    printf("Prim's Algorithm Execution Time: %.6f seconds\n", cpu_time_used);
+    printf("-----------------------------------\n");
+}
