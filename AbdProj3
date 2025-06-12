@@ -1,0 +1,261 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <limits.h>
+
+#define CITY_NAME 50
+#define MAX_NUM_OF_CITIES 1500
+
+struct node;
+typedef struct node* ptr;
+
+struct node{
+    int vertix;
+    int weight;
+    ptr next;
+};
+
+struct Graph{
+    int NumOfVerticies;
+    struct Graph** AdjLists;
+};
+
+ptr CreateNode(int vertix, int weight);
+struct Graph* CreateGraph(int NumOfVerticies);
+int CityNameToIndex(char City[CITY_NAME]);
+void LoadCities();
+void ApplyPrim();
+void ApplyKruskal();
+void CompareAlgorithms();
+
+struct HeapNode {
+    int vertex;
+    int key;
+};
+
+struct MinHeap{
+    int size;
+    int capacity;
+    int position[MAX_NUM_OF_CITIES];
+    struct HeapNode* array[MAX_NUM_OF_CITIES];
+};
+
+struct MinHeap heap;
+
+struct MinHeap* CreateMinHeap(int capacity);
+struct HeapNode* NewHeapNode(int vertex, int key);
+void SwapHeapNode(int first, int second, struct MinHeap* heap);
+void MinHeapify(struct MinHeap* heap, int pos);
+int IsInMinHeap(struct MinHeap* heap, int vertex);
+void DecreaseKey(struct MinHeap* heap, int vertex, int key);
+struct HeapNode* ExtractMin(struct MinHeap* heap);
+
+int NumOfCities;
+char CitiesNames[MAX_NUM_OF_CITIES][CITY_NAME];
+struct Graph* graph;
+
+int main(){
+    int choise;
+    do{
+        printf("\n---Tasks List--- \n\n");
+        printf("1. Load cities\n");
+        printf("2. Apply Prim's Algorithm\n");
+        printf("3. Apply Kruskal's Algorithm\n");
+        printf("4. Compare the two algorithms\n");
+        printf("5. Exit\n");
+
+        printf("\nChoose An Option:");
+        scanf("%d", &choise);
+
+        switch(choise){
+            case 1:{
+                printf("\nOperation 1 Selected: Load cities.\n\n");
+                LoadCities();
+                break;
+            }
+
+            case 2:{
+                printf("\nOperation 2 Selected: Apply Prim's Algorithm.\n\n");
+                ApplyPrim();
+                break;
+            }
+
+            case 3:{
+                printf("\nOperation 3 Selected: Apply Kruskal's Algorithm.\n\n");
+                ApplyKruskal();
+                break;
+            }
+
+            case 4:{
+                printf("\nOperation 4 Selected: Compare the two algorithms.\n\n");
+                CompareAlgorithms();
+                break;
+            }
+
+            case 5:{
+                printf("\nOperation 5 Selected: Exit.\n\n");
+                return 0;
+            }
+
+            default:{
+                printf("Invalid Option.\n");
+                break;
+            }
+        }
+    } while(choise != 5);
+
+    return 0;
+}
+
+ptr CreateNode(int vertix, int weight){
+    ptr NewNode = (ptr)malloc(sizeof(struct node));
+    NewNode->vertix = vertix;
+    NewNode->weight = weight;
+    NewNode->next = NULL;
+    return NewNode;
+}
+
+struct Graph* CreateGraph(int NumOfVerticies){
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->NumOfVerticies = NumOfVerticies;
+    graph->AdjLists = malloc(NumOfVerticies * sizeof(struct node*));
+    for(int i = 0; i < NumOfVerticies; i++){
+        graph->AdjLists[i] = NULL;
+    }
+    return graph;
+}
+
+int CityNameToIndex(char City[CITY_NAME]){
+    for(int i = 0; i < NumOfCities; i++){
+        if(strcmp(CitiesNames[i],City) == 0){
+            return i;
+        }
+    }
+    strcpy(CitiesNames[NumOfCities],City);
+    NumOfCities++;
+    return NumOfCities;
+}
+
+void LoadCities(){
+    char Line[100],City1[CITY_NAME],City2[CITY_NAME];
+    int Distance;
+    int Size = 0;
+    int Order;
+    NumOfCities = 0;
+
+    FILE* file = fopen("C:\\Users\\HP\\Desktop\\untitled9\\cities.txt", "r");
+
+    while (fgets(Line, 100, file) != NULL) {
+        char* token = strtok(Line, "#");
+        strcpy(City1, token);
+
+        token = strtok(NULL, "#");
+        strcpy(City2, token);
+
+        token = strtok(NULL, "#");
+        Distance = atoi(token);
+
+        int i = CityNameToIndex(City1);
+        int j = CityNameToIndex(City2);
+    }
+
+    fclose(file);
+
+    graph = CreateGraph(NumOfCities);
+
+    file = fopen("C:\\Users\\HP\\Desktop\\untitled9\\cities.txt", "r");
+    while (fgets(Line, 100, file) != NULL) {
+        char* token = strtok(Line, "#");
+        strcpy(City1, token);
+
+        token = strtok(NULL, "#");
+        strcpy(City2, token);
+
+        token = strtok(NULL, "#");
+        Distance = atoi(token);
+
+        int i = CityNameToIndex(City1);
+        int j = CityNameToIndex(City2);
+
+        ptr NewNode = CreateNode(j, Distance);
+        NewNode->next = graph->AdjLists[i];
+        graph->AdjLists[i] = NewNode;
+
+        NewNode = CreateNode(i, Distance);
+        NewNode->next = graph->AdjLists[j];
+        graph->AdjLists[j] = NewNode;
+
+        Size++;
+    }
+
+    Order = NumOfCities;
+    fclose(file);
+    printf("Cities Loaded successfully.\n\nGraph Order = %d\nGraph Size = %d\n\n", Order , Size);
+}
+
+struct MinHeap* CreateMinHeap(int capacity){
+
+    struct MinHeap* heap = (struct MinHeap*) malloc(sizeof(struct MinHeap));
+
+    heap->capacity = capacity;
+    heap->size = 0;
+
+    for (int i = 0; i < capacity; i++) {
+
+        heap->position[i] = -1;
+        heap->array[i] = NULL;
+
+    }
+
+    return heap;
+
+}
+
+struct HeapNode* NewHeapNode(int vertex, int key){
+
+    struct HeapNode* NewNode = (struct HeapNode*) malloc(sizeof(struct HeapNode));
+
+    NewNode->vertex = vertex;
+    NewNode->key = key;
+
+    return NewNode;
+
+}
+
+void SwapHeapNode(int first, int second, struct MinHeap* heap){
+
+    struct HeapNode* Temp;
+
+    Temp = heap->array[first];
+    heap->array[first] = heap->array[second];
+    heap->array[second] = Temp;
+
+    heap->position[heap->array[first]->vertex] = first;
+    heap->position[heap->array[second]->vertex] = second;
+
+}
+
+void MinHeapify(struct MinHeap* heap, int pos){}
+
+void ApplyPrim(){
+    clock_t start_time = clock();
+    // Implement Prim's algorithm here and calculate total cost, print MST.
+    clock_t end_time = clock();
+    double time_taken = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+    printf("Prim's Algorithm - Total Cost: %d, Time Taken: %f seconds.\n", 0, time_taken);  // Replace 0 with actual cost.
+}
+
+void ApplyKruskal(){
+    clock_t start_time = clock();
+    // Implement Kruskal's algorithm here and calculate total cost, print MST.
+    clock_t end_time = clock();
+    double time_taken = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+    printf("Kruskal's Algorithm - Total Cost: %d, Time Taken: %f seconds.\n", 0, time_taken);  // Replace 0 with actual cost.
+}
+
+void CompareAlgorithms(){
+    // Call ApplyPrim and ApplyKruskal to compare their results.
+    ApplyPrim();
+    ApplyKruskal();
+}
