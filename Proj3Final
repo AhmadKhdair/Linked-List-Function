@@ -1,0 +1,619 @@
+
+
+//Ahmad Khdair , 1230500 , Section : 3
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <limits.h> // For INT_MAX
+
+#define MAX_CITIES 300         // Maximum number of cities the graph can hold
+#define MAX_NAME_LENGTH 50     // Maximum length for a city name
+#define MAX_EDGES 1000         // Maximum number of edges
+
+typedef struct AdjListNode {
+    int dest;
+    int weight;
+    struct AdjListNode* next;
+} AdjListNode;
+
+typedef struct {
+    int src, dest, weight;
+    char src_name[MAX_NAME_LENGTH];
+    char dest_name[MAX_NAME_LENGTH];
+} Edge;
+
+typedef struct {
+    int parent;
+    int rank;
+} Subset;
+
+typedef struct {
+    int vertex;
+    int key;
+} PrimHeapNode;
+
+typedef struct {
+    Edge* heapArray;
+    int capacity;
+    int size;
+} KruskalMinHeap;
+
+typedef struct {
+    PrimHeapNode* heapArray;
+    int capacity;
+    int size;
+    int* pos;
+} PrimMinHeap;
+
+typedef struct {
+    char cities[MAX_CITIES][MAX_NAME_LENGTH];
+    AdjListNode* adj_lists[MAX_CITIES];
+    Edge edges[MAX_EDGES];
+    int num_cities;
+    int num_edges;
+} Graph;
+
+Graph my_graph;
+
+
+int last_prim_total_cost = -1;
+double last_prim_execution_time = 0.0;
+int last_prim_edges_added = -1;
+int prim_was_run = 0;
+
+int last_kruskal_total_cost = -1;
+double last_kruskal_execution_time = 0.0;
+int last_kruskal_edges_added = -1;
+int kruskal_was_run = 0;
+
+
+void init_graph();
+void load_cities();
+void print_graph_info();
+int find_city_index(char city_name[]);
+int add_city_to_graph(char city_name[]);
+void add_edge_to_graph(char city1[], char city2[], int weight);
+void apply_prims_algorithm();
+void apply_kruskals_algorithm();
+void compare_algorithms();
+
+int find_subset(Subset subsets[], int i);
+void union_subsets(Subset subsets[], int x, int y);
+
+KruskalMinHeap* createKruskalMinHeap(int capacity);
+void swap_kruskal_edges(Edge* a, Edge* b);
+void kruskalMinHeapify(KruskalMinHeap* minHeap, int idx);
+Edge extractMinKruskal(KruskalMinHeap* minHeap);
+void insertMinHeapKruskal(KruskalMinHeap* minHeap, Edge edge);
+
+PrimMinHeap* createPrimMinHeap(int capacity);
+void swap_prim_nodes(PrimHeapNode* a, PrimHeapNode* b);
+void primMinHeapify(PrimMinHeap* minHeap, int idx);
+PrimHeapNode extractMinPrim(PrimMinHeap* minHeap);
+void decreaseKeyPrim(PrimMinHeap* minHeap, int vertex, int newKey);
+int isInPrimMinHeap(PrimMinHeap* minHeap, int vertex);
+void free_adj_lists();
+void print_menu();
+
+int main() {
+    int choice;
+
+    init_graph();
+
+    printf("=== Palestinian Cities Road Network ===\n");
+    printf("MST Implementation using Kruskal's and Prim's Algorithms\n\n");
+    int flagIsLoaded=0;
+    while(1) {
+        print_menu();
+        printf("Enter your choice: ");
+        scanf("%d", &choice); // Original scanf
+
+        switch(choice) {
+            case 1:
+                if(!flagIsLoaded){
+                    load_cities();
+                    flagIsLoaded=1;
+                    last_prim_total_cost = -1;
+                    last_prim_execution_time = 0.0;
+                    last_prim_edges_added = -1;
+                    prim_was_run = 0;
+                    last_kruskal_total_cost = -1;
+                    last_kruskal_execution_time = 0.0;
+                    last_kruskal_edges_added = -1;
+                    kruskal_was_run = 0;
+                }
+                else
+                    printf("Cities File Already Loaded . .\n");
+                break;
+            case 2:
+                if(flagIsLoaded)
+                    apply_prims_algorithm();
+                else
+                    printf("load cities first . .\n");
+                break;
+            case 3:
+                if(flagIsLoaded)
+                    apply_kruskals_algorithm();
+                else
+                    printf("load cities first . .\n");
+                break;
+            case 4:
+                if(flagIsLoaded)
+                    compare_algorithms();
+                else
+                    printf("load cities first . .\n");
+                break;
+            case 5:
+                printf("Thank you for using the program!\n");
+                free_adj_lists();
+                return 0;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+        printf("\n");
+    }
+}
+
+void print_menu() {
+    printf("===== MENU =====\n");
+    printf("1. Load cities\n");
+    printf("2. Apply Prim's Algorithm\n");
+    printf("3. Apply Kruskal's Algorithm\n");
+    printf("4. Compare the two algorithms\n");
+    printf("5. Exit\n");
+    printf("================\n");
+}
+
+
+void init_graph() { //
+    my_graph.num_cities = 0;
+    my_graph.num_edges = 0;
+    for(int i = 0; i < MAX_CITIES; i++) {
+        my_graph.adj_lists[i] = NULL; // init all the adjecny lists to null . .
+    }
+}
+
+
+void free_adj_lists() {
+    // i use this function to do free all nodes at the adj list
+    for (int i = 0; i < my_graph.num_cities; i++) {
+        AdjListNode* current = my_graph.adj_lists[i];
+        while (current != NULL) {
+            AdjListNode* temp = current;
+            current = current->next;
+            free(temp);
+        }
+        my_graph.adj_lists[i] = NULL;
+    }
+}
+
+void load_cities() {
+    FILE *file = fopen("cities.txt", "r");
+    if(file == NULL) {
+        printf("Error in opening file . .\n");
+        return;
+    }
+    // i do this to be sure that everything is free now . .
+    free_adj_lists();
+    init_graph();
+
+    char line[MAX_NAME_LENGTH*2+2+3];
+    while(fgets(line, sizeof(line), file)) {
+        char *tok = strtok(line, "#");
+        char citySrc[MAX_NAME_LENGTH];
+        strcpy(citySrc,tok);
+        tok = strtok(NULL, "#");
+        char cityDes[MAX_NAME_LENGTH];
+        strcpy(cityDes,tok);
+        tok = strtok(NULL, "#");
+        int distance=atoi(tok);
+        add_edge_to_graph(citySrc, cityDes, distance);
+    }
+    fclose(file);
+    print_graph_info();
+}
+
+int find_city_index(char city_name[]) {
+    for(int i = 0; i < my_graph.num_cities; i++) {
+        if(strcmp(my_graph.cities[i], city_name) == 0) {
+            return i;  // that mean i found the city, i should return the index . .
+        }
+    }
+    return -1; // city not found so return -1
+}
+
+int add_city_to_graph(char city_name[]) {
+    int index = find_city_index(city_name);
+    if (index != -1) {
+        return index; // city already added so i return the index
+    }
+    if(my_graph.num_cities < MAX_CITIES) {
+        strcpy(my_graph.cities[my_graph.num_cities], city_name); // add the new city to graph
+        my_graph.num_cities++;
+        return my_graph.num_cities - 1;
+    }
+    printf("You Reached the maximum number of cities . .\n");
+    return -1;
+}
+
+void add_adj_node(int vertex, int dest, int weight) {
+    AdjListNode* new_node = (AdjListNode*)malloc(sizeof(AdjListNode));
+    if (new_node == NULL) {
+        printf("Error in malloc for a new node.\n");
+        return;
+    }
+    new_node->dest = dest;
+    new_node->weight = weight;
+    new_node->next = my_graph.adj_lists[vertex];  // i let the next of the new node the first node at the list
+    my_graph.adj_lists[vertex] = new_node;  // now i let the new node the head of the list
+}
+
+void add_edge_to_graph(char city1[], char city2[], int weight) {
+    int index1 = add_city_to_graph(city1);
+    int index2 = add_city_to_graph(city2);
+
+    if(index1 != -1 && index2 != -1) {
+        add_adj_node(index1, index2, weight);
+        add_adj_node(index2, index1, weight);
+        if (my_graph.num_edges < MAX_EDGES) {
+            //here i add the info of the edge to the edges array
+            strcpy(my_graph.edges[my_graph.num_edges].src_name, city1);
+            strcpy(my_graph.edges[my_graph.num_edges].dest_name, city2);
+            my_graph.edges[my_graph.num_edges].src = index1;
+            my_graph.edges[my_graph.num_edges].dest = index2;
+            my_graph.edges[my_graph.num_edges].weight = weight;
+            my_graph.num_edges++;
+        }
+        else
+            printf("You Rreached The Number Of Cities\n");
+    }
+}
+
+
+void print_graph_info() {
+    printf("Graph loaded successfully!\n");
+    printf("Graph Order : %d\n", my_graph.num_cities);
+    printf("Graph Size : %d\n", my_graph.num_edges);
+}
+
+PrimMinHeap* createPrimMinHeap(int capacity) {
+    PrimMinHeap* minHeap = (PrimMinHeap*) malloc(sizeof(PrimMinHeap));
+    if (minHeap == NULL)
+        return NULL;
+    minHeap->heapArray = (PrimHeapNode*) malloc(capacity * sizeof(PrimHeapNode));
+    if (minHeap->heapArray == NULL) {
+        free(minHeap);
+        return NULL;
+    }
+    minHeap->pos = (int*) malloc(capacity * sizeof(int));
+    if (minHeap->pos == NULL) {
+        free(minHeap->heapArray);
+        free(minHeap);
+        return NULL;
+    }
+    minHeap->size = 0;
+    minHeap->capacity = capacity;
+    return minHeap;
+}
+
+void swap_prim_nodes(PrimHeapNode* a, PrimHeapNode* b) {
+    //by this function i swap the twos nodes in the heap
+    PrimHeapNode temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void primMinHeapify(PrimMinHeap* minHeap, int idx) {
+    int smallest = idx;
+    int left = 2 * idx + 1;
+    int right = 2 * idx + 2;
+
+    if (left < minHeap->size && minHeap->heapArray[left].key < minHeap->heapArray[smallest].key)
+        smallest = left;
+
+
+    if (right < minHeap->size && minHeap->heapArray[right].key < minHeap->heapArray[smallest].key)
+        smallest = right;
+
+    if (smallest != idx) {
+        minHeap->pos[minHeap->heapArray[smallest].vertex] = idx;
+        minHeap->pos[minHeap->heapArray[idx].vertex] = smallest;
+        swap_prim_nodes(&minHeap->heapArray[idx], &minHeap->heapArray[smallest]);
+        primMinHeapify(minHeap, smallest);
+    }
+}
+
+PrimHeapNode extractMinPrim(PrimMinHeap* minHeap) {
+    if (minHeap->size == 0) {
+        PrimHeapNode dummy = {-1, INT_MAX};
+        return dummy;
+    }
+    PrimHeapNode root = minHeap->heapArray[0];
+    minHeap->heapArray[0] = minHeap->heapArray[minHeap->size - 1];
+    minHeap->pos[root.vertex] = -1;
+    if (minHeap->size > 1)
+        minHeap->pos[minHeap->heapArray[0].vertex] = 0;
+    minHeap->size--;
+    primMinHeapify(minHeap, 0);
+    return root;
+}
+
+void decreaseKeyPrim(PrimMinHeap* minHeap, int vertex, int newKey) {
+    int i = minHeap->pos[vertex];
+    if (i == -1 || newKey >= minHeap->heapArray[i].key)
+        return;
+
+    minHeap->heapArray[i].key = newKey;
+    while (i != 0 && minHeap->heapArray[(i - 1) / 2].key > minHeap->heapArray[i].key) {
+        minHeap->pos[minHeap->heapArray[i].vertex] = (i - 1) / 2;
+        minHeap->pos[minHeap->heapArray[(i - 1) / 2].vertex] = i;
+        swap_prim_nodes(&minHeap->heapArray[i], &minHeap->heapArray[(i - 1) / 2]);
+        i = (i - 1) / 2;
+    }
+}
+
+int isInPrimMinHeap(PrimMinHeap* minHeap, int vertex) {
+    return (minHeap->pos[vertex] < minHeap->size && minHeap->pos[vertex] >= 0); // If the vertex's position is valid and within the heap size
+}
+
+void apply_prims_algorithm() {
+    char source_city_name[MAX_NAME_LENGTH];
+    printf("Enter the source city name: ");
+    gets(source_city_name); // i do 2 gets, cus first gets is read by the scanf from the main
+    gets(source_city_name);
+
+    int source_index = find_city_index(source_city_name);// find the index of the city in the graph
+    if (source_index == -1) {
+        printf("City '%s' not found!\n", source_city_name); // if the city is not found
+        return;
+    }
+
+    clock_t start_time = clock(); // Start the timer
+
+    int parent[MAX_CITIES];
+    int key[MAX_CITIES]; // store min weight to reach vertex
+
+    PrimMinHeap* minHeap = createPrimMinHeap(my_graph.num_cities); //create the Min Heap for prim algorithm
+    if (minHeap == NULL)
+        return;
+
+    for (int i = 0; i < my_graph.num_cities; i++) {
+        key[i] = INT_MAX; // init as they infinity ..
+        parent[i] = -1; // init the parent as -1 for all verteices
+        minHeap->heapArray[i].vertex = i;//set the vertex index for each heap node
+        minHeap->heapArray[i].key = INT_MAX; // init key for each vertex
+        minHeap->pos[i] = i; // init position in heap and this is before heapify
+    }
+
+    key[source_index] = 0; // this is the key for the source city
+    decreaseKeyPrim(minHeap, source_index, 0);
+    minHeap->size = my_graph.num_cities; // set the size of the heap to the number of cities
+
+    int total_cost = 0;
+    int edges_in_mst = 0;
+
+    printf("\n Prim's Algorithm Results \n");
+    printf("MST Edges:\n");
+
+    while (minHeap->size > 0 && edges_in_mst < my_graph.num_cities - 1) {
+        PrimHeapNode extracted_node = extractMinPrim(minHeap);// get the vertex with the minimum key
+        int u = extracted_node.vertex;
+        if (extracted_node.key == INT_MAX) { // if remaining nodes are unreachable
+            printf("Graph is disconnected. MST cannot be formed for all vertices from source '%s'.\n", source_city_name);
+            break;
+        }
+        if(parent[u] != -1) {//if the vertex has a parent that mean that it is part of the MST
+            printf("%s -- %s: %d km\n", my_graph.cities[parent[u]], my_graph.cities[u], key[u]);
+            total_cost += key[u]; // add the edge weight to the total cost
+            edges_in_mst++; // // increment the number of edges in the MST
+        }
+        // now iterate all adjacent vericies of u . .
+        AdjListNode* current_adj = my_graph.adj_lists[u];
+        while (current_adj != NULL) {
+            int v = current_adj->dest; // adj vertex
+            int weight = current_adj->weight; // weight of the edge
+            if(isInPrimMinHeap(minHeap, v) && weight < key[v]) { //if vertex is in the heap and the weight is smaller
+                key[v] = weight; // now we update the key of adj ver
+                parent[v] = u;// and set the parent of the adj ver
+                decreaseKeyPrim(minHeap, v, key[v]); // update the heap with the new kew
+            }
+            current_adj = current_adj->next;// go the next adj node
+        }
+    }
+
+    clock_t end_time = clock(); // here is the end of the timer
+    double execution_time = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+    printf("Total Cost: %d km\n", total_cost);
+    printf("Execution Time: %.6f seconds\n", execution_time);
+    printf("  Edges in MST (Prim's): %d \n", edges_in_mst);
+    if (my_graph.num_cities > 1 && edges_in_mst != my_graph.num_cities - 1) {// num of  edges at mst surly should equal num of cities-1
+        // if its not equal then surly its disconnected
+        printf("  Note: This indicates the graph is disconnected from the source city, as not all cities were included in the MST.\n");
+    }
+    printf("\n");
+
+    last_prim_total_cost = total_cost;
+    last_prim_execution_time = execution_time;
+    last_prim_edges_added = edges_in_mst;
+    prim_was_run = 1;
+    free(minHeap->pos);
+    free(minHeap->heapArray);
+    free(minHeap);
+}
+
+
+KruskalMinHeap* createKruskalMinHeap(int capacity) {
+
+    KruskalMinHeap* minHeap = (KruskalMinHeap*) malloc(sizeof(KruskalMinHeap));
+    if (minHeap == NULL)
+        return NULL;
+    minHeap->heapArray = (Edge*) malloc(capacity * sizeof(Edge));
+    if (minHeap->heapArray == NULL) {
+        free(minHeap);
+        return NULL;
+    }
+    minHeap->size = 0;
+    minHeap->capacity = capacity;
+    return minHeap;
+}
+
+void kruskalMinHeapify(KruskalMinHeap* minHeap, int idx) {
+    int smallest = idx;
+    int left = 2 * idx + 1;
+    int right = 2 * idx + 2;
+
+    if (left < minHeap->size && minHeap->heapArray[left].weight < minHeap->heapArray[smallest].weight) {
+        smallest = left;
+    }
+
+    if (right < minHeap->size && minHeap->heapArray[right].weight < minHeap->heapArray[smallest].weight) {
+        smallest = right;
+    }
+
+    if (smallest != idx) {
+        swap_kruskal_edges(&minHeap->heapArray[idx], &minHeap->heapArray[smallest]);
+        kruskalMinHeapify(minHeap, smallest);
+    }
+}
+
+Edge extractMinKruskal(KruskalMinHeap* minHeap) {
+    if (minHeap->size == 0) {
+        Edge dummy = {-1, -1, INT_MAX, "", ""};
+        return dummy;
+    }
+
+    Edge root = minHeap->heapArray[0];
+    minHeap->heapArray[0] = minHeap->heapArray[minHeap->size - 1];
+    minHeap->size--;
+    kruskalMinHeapify(minHeap, 0);
+    return root;
+}
+
+void insertMinHeapKruskal(KruskalMinHeap* minHeap, Edge edge) {
+    if (minHeap->size == minHeap->capacity) {
+        fprintf(stderr, "Error Full.\n");
+        return;
+    }
+    minHeap->size++;
+    int i = minHeap->size - 1;
+    minHeap->heapArray[i] = edge;
+    while (i != 0 && minHeap->heapArray[(i - 1) / 2].weight > minHeap->heapArray[i].weight) {
+        swap_kruskal_edges(&minHeap->heapArray[i], &minHeap->heapArray[(i - 1) / 2]);
+        i = (i - 1) / 2;
+    }
+}
+void apply_kruskals_algorithm() {
+    clock_t start_time = clock(); // start calclating time
+
+    KruskalMinHeap* minHeap = createKruskalMinHeap(my_graph.num_edges); // create minheap to store edges for krksual
+    if (minHeap == NULL)
+        return;
+
+    for (int i = 0; i < my_graph.num_edges; i++) {
+        insertMinHeapKruskal(minHeap, my_graph.edges[i]);
+    }
+    Subset* subsets = (Subset*)malloc(my_graph.num_cities * sizeof(Subset));
+    if (subsets == NULL) {
+        printf( "Error Memory Malloc .\n");
+        free(minHeap->heapArray);
+        free(minHeap);
+        return;
+    }
+
+    for (int v = 0; v < my_graph.num_cities; v++) {
+        subsets[v].parent = v;
+        subsets[v].rank = 0;
+    }
+
+    int total_cost = 0;
+    int edges_added = 0;
+
+    printf("\n=== Kruskal's Algorithm Results ===\n");
+    printf("MST Edges:\n");
+
+    while (edges_added < my_graph.num_cities - 1 && minHeap->size > 0) {
+        Edge current_edge = extractMinKruskal(minHeap);
+
+        if (current_edge.weight == INT_MAX && current_edge.src == -1)
+            break;
+        
+        int x = find_subset(subsets, current_edge.src);
+        int y = find_subset(subsets, current_edge.dest);
+
+        if (x != y) { // if they are belong to different setes , then add the edge to the mst
+            printf("%s -- %s: %d km\n", my_graph.cities[current_edge.src], my_graph.cities[current_edge.dest], current_edge.weight);
+            total_cost += current_edge.weight; // i should add the edge weight to total cost
+            union_subsets(subsets, x, y); //union the two sets to which the cities belong
+            edges_added++; // increment the number of edges . .
+        }
+    }
+
+    clock_t end_time = clock(); // end the time calculation
+    double execution_time = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
+
+    printf("Total Cost: %d km\n", total_cost);
+    printf("Execution Time: %.6f seconds\n", execution_time);
+    printf("  Edges in MST (Kruskal's): %d \n", edges_added);
+    if (my_graph.num_cities > 1 && edges_added != my_graph.num_cities - 1) { // num of  edges at mst surly should equal num of cities-1
+        // if its not equal then surly its disconnected
+        printf("  Note: This indicates the graph is disconnected, as Kruskal's formed a Minimum Spanning Forest.\n");
+    }
+    printf("\n");
+
+    last_kruskal_total_cost = total_cost;
+    last_kruskal_execution_time = execution_time;
+    last_kruskal_edges_added = edges_added;
+    kruskal_was_run = 1;
+    free(subsets);
+    free(minHeap->heapArray);
+    free(minHeap);
+}
+
+void swap_kruskal_edges(Edge* a, Edge* b) {
+    Edge temp = *a;// swap the values of the two edges
+    *a = *b;
+    *b = temp;
+}
+int find_subset(Subset subsets[], int i) {
+    if (subsets[i].parent != i) {
+        subsets[i].parent = find_subset(subsets, subsets[i].parent);  // Path compression
+    }
+    return subsets[i].parent;
+}
+void union_subsets(Subset subsets[], int x, int y) {
+    int x_root = find_subset(subsets, x);
+    int y_root = find_subset(subsets, y);
+
+    if (subsets[x_root].rank < subsets[y_root].rank) {
+        subsets[x_root].parent = y_root;
+    } else if (subsets[x_root].rank > subsets[y_root].rank) {
+        subsets[y_root].parent = x_root;
+    } else {
+        subsets[y_root].parent = x_root;
+        subsets[x_root].rank++;
+    }
+}
+
+void compare_algorithms() {
+    printf("\nComparison between Prim's and Kruskal's Algorithms : \n");
+
+    if (!prim_was_run || !kruskal_was_run) {
+        printf("Please run Prim's Algorithm (Option 2) AND Kruskal's Algorithm (Option 3) first to enable comparison.\n");
+        return;
+    }
+
+    printf("Prim's Algorithm Results (from last run):\n");
+    printf("  Total Cost: %d km\n", last_prim_total_cost);
+    printf("  Execution Time: %.6f seconds\n", last_prim_execution_time);
+    if (my_graph.num_cities > 1 && last_prim_edges_added != my_graph.num_cities - 1)
+        printf("The Graph Is Disconnect.\n");
+
+    printf("\nKruskal's Algorithm Results:\n");
+    printf("  Total Cost: %d km\n", last_kruskal_total_cost);
+    printf("  Execution Time: %.6f seconds\n", last_kruskal_execution_time);
+    if (my_graph.num_cities > 1 && last_kruskal_edges_added != my_graph.num_cities - 1)
+        printf("The Graph Is Disconnect.\n");
+}
